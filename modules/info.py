@@ -1,12 +1,10 @@
-import dc_interactions as dc
-from xenon import rest, User
-
-from util import *
+from dbots.cmd import *
+from dbots import rest
 
 
-class InfoModule(dc.Module):
-    @dc.Module.command()
-    async def avatar(self, ctx, user: dc.CommandOptionType.USER):
+class InfoModule(Module):
+    @Module.command()
+    async def avatar(self, ctx, user: CommandOptionType.USER):
         """
         Get the avatar url for an user
         """
@@ -17,13 +15,10 @@ class InfoModule(dc.Module):
             except rest.HTTPNotFound:
                 await ctx.respond("I'm unable to find this user :(", ephemeral=True)
 
-        else:
-            resolved = User(resolved)
-
         await ctx.respond(f"**{resolved.name}**s **Avatar**\n{resolved.avatar_url}", ephemeral=True)
 
     # @dc.Module.command()
-    async def user(self, ctx, user: dc.CommandOptionType.USER):
+    async def user(self, ctx, user: CommandOptionType.USER):
         """
         Get information about a user
         """
@@ -37,10 +32,11 @@ class InfoModule(dc.Module):
         await ctx.respond()
 
     # @dc.Module.command()
-    async def role(self):
+    async def role(self, ctx, role: CommandOptionType.ROLE):
         """
         Get information about a role
         """
+        print(ctx.resolved)
 
     # @dc.Module.command()
     async def channel(self):

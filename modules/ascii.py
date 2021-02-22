@@ -1,4 +1,4 @@
-import dc_interactions as dc
+from dbots.cmd import *
 
 from util import *
 
@@ -29,7 +29,7 @@ APPEND_COMMANDS = [
 ]
 
 
-class AsciiModule(dc.Module):
+class AsciiModule(Module):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -40,12 +40,12 @@ class AsciiModule(dc.Module):
             return cmd_func
 
         for name, value in APPEND_COMMANDS:
-            self.commands.append(dc.Command(
+            self.commands.append(Command(
                 name=name,
                 description=f"Append {value} to your message.",
                 callable=make_callable(value),
-                options=[dc.CommandOption(
-                    type=dc.CommandOptionType.STRING,
+                options=[CommandOption(
+                    type=CommandOptionType.STRING,
                     name="message",
                     description="Your message",
                     required=False

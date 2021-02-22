@@ -1,9 +1,10 @@
-import dc_interactions as dc
-from xenon import rest
 import string
+import re
+
+from dbots.cmd import *
+from dbots import rest
 
 from util import *
-
 
 NUMBERS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
 EXTRA_EMOJIS = {
@@ -24,8 +25,8 @@ BOTTOM_VALUES = {
 BOTTOM_SEPARATOR = '👉👈'
 
 
-class TransformModule(dc.Module):
-    @dc.Module.command()
+class TransformModule(Module):
+    @Module.command()
     async def big(self, ctx, message: str.lower):
         """
         Convert text to emojis
@@ -46,7 +47,7 @@ class TransformModule(dc.Module):
 
         await send_webhook_response(ctx, result)
 
-    @dc.Module.command()
+    @Module.command()
     async def bottom(self, ctx, message):
         """
         Convert your message to bottom 🥺
@@ -67,11 +68,21 @@ class TransformModule(dc.Module):
         except rest.HTTPBadRequest:
             await ctx.respond("Your text is too long to be converted to bottom 🥺", ephemeral=True)
 
-    @dc.Module.command()
+    @Module.command(extends=dict(
+        bottom="The bottom text or id of the message to decode"
+    ))
     async def unbottom(self, ctx, bottom):
         """
         Decode bottom to the original message 🥺
         """
+        if re.match(r"\d", bottom):
+            try:
+                msg = await ctx.bot.http.get_channel_message(ctx.channel_id, bottom)
+            except rest.HTTPNotFound:
+                await ctx.respond("Can't find that message in this channel :(", ephemeral=True)
+            else:
+                bottom = msg.content
+
         raw = bytearray()
         text = bottom.strip()
         if text.endswith(BOTTOM_SEPARATOR):
@@ -84,9 +95,16 @@ class TransformModule(dc.Module):
                     value += BOTTOM_VALUES[emoji]
                 except KeyError:
                     await ctx.respond("That text is not valid bottom :pleading_face:\n"
-                                      "Use `/bottom` to create bottom text.")
+                                      "Use `/bottom` to create bottom text.", ephemeral=True)
                     return
 
             raw += value.to_bytes(1, "big")
 
         await ctx.respond(f"The original message is:\n```{raw.decode()}```", ephemeral=True)
+
+    @Module.command()
+    async def reverse(self, ctx, message):
+        """
+        Reverse your message
+        """
+        await send_webhook_response(ctx, message[::-1])

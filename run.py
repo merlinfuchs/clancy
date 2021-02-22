@@ -2,11 +2,11 @@ import asyncio
 from os import environ as env
 from aiohttp import web
 
-from bot import Xenon
-from modules import ascii, transform, utils, fun, info
+from bot import Clancy
+from modules import ascii, transform, utils, fun, info, admin
 
 
-bot = Xenon(
+bot = Clancy(
     public_key=env.get("PUBLIC_KEY"),
     token=env.get("TOKEN"),
     guild_id=env.get("GUILD_ID")
@@ -16,7 +16,8 @@ modules = {
     transform.TransformModule,
     utils.UtilsModule,
     fun.FunModule,
-    info.InfoModule
+    info.InfoModule,
+    admin.AdminModule
 }
 for module in modules:
     bot.load_module(module(bot))
@@ -26,7 +27,8 @@ app = web.Application()
 
 @app.on_startup.append
 async def prepare_bot(*_):
-    await bot.prepare()
+    await bot.setup(redis_url=env.get("REDIS_URL", "redis://localhost"))
+    await bot.push_commands()
 
 
 if __name__ == "__main__":

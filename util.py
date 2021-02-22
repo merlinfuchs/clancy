@@ -1,4 +1,4 @@
-from xenon import rest, Webhook
+from dbots import rest, Webhook, WebhookType
 
 
 __all__ = (
@@ -16,7 +16,7 @@ async def send_webhook_response(ctx, content=None, username=None, avatar_url=Non
     cached = await ctx.bot.redis.get(f"webhooks:{ctx.channel_id}")
     if cached:
         id, token = cached.decode().split(" ")
-        webhook = Webhook({"id": id, "token": token})
+        webhook = Webhook({"id": id, "token": token, "type": 1})
 
     else:
         try:
@@ -24,9 +24,10 @@ async def send_webhook_response(ctx, content=None, username=None, avatar_url=Non
         except rest.HTTPForbidden:
             raise MissingWebhookPermissions
 
-        if len(existing) != 0:
-            webhook = existing[0]
-
+        for ex in existing:
+            if ex.type == WebhookType.INCOMING:
+                webhook = ex
+                break
         else:
             try:
                 webhook = await ctx.bot.http.create_webhook(ctx.channel_id, name="Clancy")
@@ -37,7 +38,7 @@ async def send_webhook_response(ctx, content=None, username=None, avatar_url=Non
 
     username = username or ctx.author.name
     avatar_url = avatar_url or str(ctx.author.avatar_url) if ctx.author.avatar_url else None
-    await ctx.bot.http.execute_webhook(
+    await ctx.bot.http.create_webhook_message(
         webhook,
         content=content,
         username=username,

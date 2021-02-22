@@ -1,6 +1,3 @@
-from xenon import *
-from xenon.cmd import *
-import dc_interactions as dc
 from motor.motor_asyncio import AsyncIOMotorClient
 import aioredis
 import json
@@ -10,17 +7,17 @@ import traceback
 import sys
 from datetime import datetime
 
+from dbots.cmd import *
+from dbots.utils import *
+
 from util import *
 
 
-class Xenon(dc.InteractionBot):
+class Clancy(InteractionBot):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs, ctx_klass=CustomContext)
+        super().__init__(**kwargs)
         self.mongo = AsyncIOMotorClient(env.get("MONGO_URL", "mongodb://localhost"))
         self.db = self.mongo.xenon
-        self.redis = None
-        self.http = None
-        self.relay = None
 
         self._receiver = aioredis.pubsub.Receiver()
 
@@ -44,21 +41,6 @@ class Xenon(dc.InteractionBot):
             }))
             await ctx.respond_with_source(
                 "An unexpected error occurred. Please report this on the "
-                "[Support Server](discord.gg/).\n\n"
+                "[Support Server](https://discord.gg/m28chYBEEj).\n\n"
                 f"**Error Code**: `{error_id.upper()}`"
             )
-
-    async def prepare(self):
-        self.redis = await aioredis.create_redis_pool(env.get("REDIS_URL", "redis://localhost"))
-
-        ratelimits = rest.RedisRatelimitHandler(self.redis)
-        self.http = rest.HTTPClient(self.token, ratelimits)
-
-        await super().prepare()
-        # await self.flush_commands()
-        self.loop.create_task(self.push_commands())
-
-    def make_request(self, method, path, data=None, **params):
-        req = rest.Request(method, path, **params)
-        self.http.start_request(req, json=data)
-        return req

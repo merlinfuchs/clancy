@@ -1,12 +1,13 @@
-import dc_interactions as dc
 import random
+
+from dbots.cmd import *
 
 from util import *
 from .transform import NUMBERS
 
 
-class FunModule(dc.Module):
-    @dc.Module.command(extends=dict(
+class FunModule(Module):
+    @Module.command(extends=dict(
         count="The count of dice to roll",
         private="Whether the result should be shown to everyone"
     ))
@@ -45,7 +46,7 @@ class FunModule(dc.Module):
         else:
             await ctx.respond(text, ephemeral=True)
 
-    @dc.Module.command(extends=dict(
+    @Module.command(extends=dict(
         public="Whether the result should be shown to everyone"
     ))
     async def choose(self, ctx, option_a, option_b, option_c=None, option_d=None, option_e=None, public: bool = True):
@@ -62,7 +63,7 @@ class FunModule(dc.Module):
         else:
             await ctx.respond(text, ephemeral=True)
 
-    @dc.Module.command(extends=dict(
+    @Module.command(extends=dict(
         public="Whether the result should be shown to everyone"
     ))
     async def coin(self, ctx, public: bool = True):
@@ -77,7 +78,7 @@ class FunModule(dc.Module):
         else:
             await ctx.respond(text, ephemeral=True)
 
-    @dc.Module.command(extends=dict(
+    @Module.command(extends=dict(
         min="The minimum number",
         max="The maximum number",
         public="Whether the result should be shown to everyone"
@@ -93,3 +94,10 @@ class FunModule(dc.Module):
 
         else:
             await ctx.respond(text, ephemeral=True)
+
+    @Module.command()
+    async def monox(self, ctx, message=""):
+        """
+        monox
+        """
+        await send_webhook_response(ctx, f"{message} <a:monoxpat:797866087000702986>")
